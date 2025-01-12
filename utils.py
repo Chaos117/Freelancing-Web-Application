@@ -1,21 +1,20 @@
-from .models import Project, Tag
 from django.db.models import Q
+from .models import Profile, Skill
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 
-def paginateProjects(request, projects, results):
-
+def paginateProfiles(request, profiles, results):
     page = request.GET.get('page')
-    paginator = Paginator(projects, results)
+    paginator = Paginator(profiles, results)
 
     try:
-        projects = paginator.page(page)
+        profiles = paginator.page(page)
     except PageNotAnInteger:
         page = 1
-        projects = paginator.page(page)
+        profiles = paginator.page(page)
     except EmptyPage:
         page = paginator.num_pages
-        projects = paginator.page(page)
+        profiles = paginator.page(page)
 
     leftIndex = (int(page) - 4)
 
@@ -29,21 +28,21 @@ def paginateProjects(request, projects, results):
 
     custom_range = range(leftIndex, rightIndex)
 
-    return custom_range, projects
+    return custom_range, profiles
 
 
-def searchProjects(request):
+def searchProfiles(request):
     search_query = ''
 
     if request.GET.get('search_query'):
         search_query = request.GET.get('search_query')
 
-    tags = Tag.objects.filter(name__icontains=search_query)
+    skills = Skill.objects.filter(name__icontains=search_query)
 
-    projects = Project.objects.distinct().filter(
-        Q(title__icontains=search_query) |
-        Q(description__icontains=search_query) |
-        Q(owner__name__icontains=search_query) |
-        Q(tags__in=tags)
+    profiles = Profile.objects.distinct().filter(
+        Q(name__icontains=search_query) |
+        Q(short_intro__icontains=search_query) |
+        Q(skill__in=skills)
     )
-    return projects, search_query
+
+    return profiles, search_query
